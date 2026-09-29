@@ -1,4 +1,4 @@
-````markdown
+
 # Research Paper Assistant
 
 An AI-powered Research Paper Assistant that uses **Retrieval-Augmented Generation (RAG)** to answer questions based only on information found in uploaded research papers.
@@ -199,15 +199,6 @@ This project was built to understand the practical workflow of a RAG application
 * Prompt grounding
 * LLM integration
 * FastAPI backend development
-
-## Author
-
-**Haziqa Shakir Khan**
-
-AI & Data Science Student
-Aspiring AI Engineer
-
-GitHub: [haziqashakirkhan](https://github.com/haziqashakirkhan)
 
 ```
 
