@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Research Paper Assistant</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..700&family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet"
+    >
+
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+    <!-- Ambient background -->
+    <div class="bg-orbs" aria-hidden="true">
+        <span class="orb orb-1"></span>
+        <span class="orb orb-2"></span>
+        <span class="orb orb-3"></span>
+        <span class="grid-overlay"></span>
+    </div>
+
+    <!-- Toast layer -->
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+
+    <!-- ================================================================
+         SLIM STICKY HEADER
+         ================================================================ -->
+    <header class="topbar">
+        <div class="topbar-inner">
+
+            <div class="brand">
+                <span class="brand-mark" aria-hidden="true">◈</span>
+                <div class="brand-text">
+                    <span class="brand-name">Research Paper Assistant</span>
+                    <span class="brand-sub">Grounded RAG Workspace</span>
+                </div>
+            </div>
+
+            <div class="topbar-status">
+                <span class="status-pill status-live">
+                    <span class="dot"></span>
+                    <span>Model online</span>
+                </span>
+                <span class="status-pill status-muted">
+                    FastAPI · ChromaDB · LLM
+                </span>
+            </div>
+
+        </div>
+    </header>
+
+
+    <div class="page">
+
+
+        <!-- ================================================================
+             HERO — Full-width question command bar
+             ================================================================ -->
+        <section class="hero">
+
+            <p class="eyebrow hero-eyebrow">
+                <span class="eyebrow-line" aria-hidden="true"></span>
+                Intelligence Desk
+                <span class="eyebrow-line" aria-hidden="true"></span>
+            </p>
+
+            <h1 class="hero-title">
+                Ask your sources
+                <em>anything</em>.
+            </h1>
+
+            <p class="hero-sub">
+                Every answer is drawn from the papers you upload — and shows
+                the exact page it came from. No external knowledge, no guessing.
+            </p>
+
+
+            <!-- Big question bar -->
+            <form
+                id="ask-form"
+                class="ask-form hero-ask"
+                action="/ask"
+                method="post"
+            >
+                <div class="input-wrapper">
+                    <span class="input-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="18" height="18"
+                             fill="none" stroke="currentColor" stroke-width="1.8"
+                             stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="7"/>
+                            <path d="m21 21-4.3-4.3"/>
+                        </svg>
+                    </span>
+
+                    <input
+                        id="question"
+                        class="question-input"
+                        type="text"
+                        name="question"
+                        placeholder="What methodology did the authors use?"
+                        autocomplete="off"
+                        required
+                        value="{{ question if question else '' }}"
+                    >
+
+                    <button
+                        id="ask-btn"
+                        class="button button-primary ask-button"
+                        type="submit"
+                    >
+                        <span class="btn-label">Ask</span>
+                    </button>
+                </div>
+
+                <!-- Shortcut hint -->
+                <div class="shortcut-hint">
+                    <span><kbd>/</kbd> focus</span>
+                    <span><kbd>⌘</kbd> <kbd>↵</kbd> submit</span>
+                    <span><kbd>esc</kbd> clear</span>
+                </div>
+            </form>
+
+
+            <!-- Suggestion chips -->
+            <div class="suggestions suggestions-hero">
+                <span class="suggestions-label">Suggestions</span>
+
+                <button type="button" class="suggestion"
+                        data-question="Summarize this paper.">
+                    Summarize
+                </button>
+                <button type="button" class="suggestion"
+                        data-question="What problem does this paper solve?">
+                    Problem
+                </button>
+                <button type="button" class="suggestion"
+                        data-question="What methodology is used?">
+                    Methodology
+                </button>
+                <button type="button" class="suggestion"
+                        data-question="What datasets and algorithms are used?">
+                    Datasets
+                </button>
+                <button type="button" class="suggestion"
+                        data-question="What are the key findings?">
+                    Key findings
+                </button>
+                <button type="button" class="suggestion"
+                        data-question="What limitations and future work are mentioned?">
+                    Limitations
+                </button>
+            </div>
+
+        </section>
+
+
+        <!-- ================================================================
+             WORKSPACE — Archive (left)  |  Response (right)
+             ================================================================ -->
+        <main class="workspace">
+
+
+            <!-- ============ LEFT — SOURCE ARCHIVE ============ -->
+            <aside class="panel panel-archive">
+
+                <header class="panel-head">
+                    <p class="section-label">Source Archive</p>
+                    <h2>Papers in context</h2>
+                    <p class="panel-desc">
+                        Feed the desk with PDFs. Every retrieval, every
+                        citation — traced back to these files.
+                    </p>
+                </header>
+
+
+                <form
+                    id="upload-form"
+                    class="upload-form"
+                    action="/upload"
+                    method="post"
+                    enctype="multipart/form-data"
+                >
+                    <input
+                        id="file-input"
+                        class="file-input"
+                        type="file"
+                        name="files"
+                        accept=".pdf"
+                        multiple
+                        hidden
+                    >
+
+                    <label
+                        for="file-input"
+                        id="dropzone-label"
+                        class="dropzone"
+                    >
+                        <span class="dropzone-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="22" height="22" fill="none"
+                                 stroke="currentColor" stroke-width="1.6"
+                                 stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 3v12"/>
+                                <path d="m7 8 5-5 5 5"/>
+                                <path d="M20 16v3a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-3"/>
+                            </svg>
+                        </span>
+
+                        <div class="dropzone-text">
+                            <strong>Drop PDFs here</strong>
+                            <span>or <u>browse files</u></span>
+                        </div>
+
+                        <small>PDF only · Up to 50 MB each</small>
+                    </label>
+
+                    <ul id="file-list" class="file-list" hidden></ul>
+
+                    <button
+                        id="upload-btn"
+                        class="button button-primary"
+                        type="submit"
+                        disabled
+                    >
+                        <span class="btn-label">Add to archive</span>
+                    </button>
+                </form>
+
+
+                {% if message %}
+                    {% set is_error =
+                        ('Error' in message)
+                        or ('Unsupported' in message)
+                        or ('Could not' in message)
+                    %}
+                    <div
+                        class="notice
+                        {% if is_error %}notice-error{% else %}notice-success{% endif %}"
+                        data-server-message="1"
+                    >
+                        {{ message }}
+                    </div>
+                {% endif %}
+
+
+                <!-- Decorative stats footer -->
+                <footer class="archive-foot">
+                    <div class="archive-stat">
+                        <span class="stat-num">·</span>
+                        <span class="stat-lbl">PDF</span>
+                    </div>
+                    <div class="archive-stat">
+                        <span class="stat-num">·</span>
+                        <span class="stat-lbl">Pages cited</span>
+                    </div>
+                    <div class="archive-stat">
+                        <span class="stat-num">·</span>
+                        <span class="stat-lbl">Retrieved</span>
+                    </div>
+                </footer>
+            </aside>
+
+
+            <!-- ============ RIGHT — RESPONSE ============ -->
+            <section
+                class="panel panel-response
+                {% if answer %}panel-response-active{% endif %}"
+                id="answer-section"
+            >
+
+                <header class="panel-head">
+                    <p class="section-label">Response</p>
+                    <h2>
+                        {% if answer %}
+                            Synthesized from your archive
+                        {% else %}
+                            Awaiting your first question
+                        {% endif %}
+                    </h2>
+                </header>
+
+
+                {% if answer %}
+
+                    <article class="answer-card" id="answer-card">
+
+                        {% if question %}
+                            <div class="asked-question">
+                                <span class="section-label">You asked</span>
+                                <p>“{{ question }}”</p>
+                            </div>
+                        {% endif %}
+
+                        <div class="answer-content">
+                            <div class="answer-header">
+                                <span class="section-label">Answer</span>
+
+                                <button
+                                    type="button"
+                                    class="copy-btn"
+                                    id="copy-answer"
+                                    data-target="answer-body"
+                                    title="Copy answer"
+                                >
+                                    <svg viewBox="0 0 24 24" width="14" height="14"
+                                         fill="none" stroke="currentColor" stroke-width="1.8"
+                                         stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="9" y="9" width="13" height="13" rx="2"/>
+                                        <path d="M5 15V5a2 2 0 0 1 2-2h10"/>
+                                    </svg>
+                                    <span>Copy</span>
+                                </button>
+                            </div>
+
+                            <div class="answer-text" id="answer-body">{{ answer }}</div>
+                        </div>
+
+                        {% if sources %}
+                            <div class="sources">
+                                <div class="sources-heading">
+                                    <p class="section-label">Citations</p>
+                                    <span>{{ sources|length }} passage{{ 's' if sources|length != 1 else '' }} retrieved</span>
+                                </div>
+
+                                <div class="source-list">
+                                    {% for source in sources %}
+                                        <div class="source-item">
+                                            <div class="source-number">{{ loop.index }}</div>
+                                            <div class="source-info">
+                                                <strong title="{{ source.document }}">
+                                                    {{ source.document }}
+                                                </strong>
+                                                <span>Page {{ source.page }}</span>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+                    </article>
+
+                {% else %}
+
+                    <div class="empty-state">
+                        <div class="empty-icon" aria-hidden="true">
+                            <svg viewBox="0 0 48 48" width="36" height="36"
+                                 fill="none" stroke="currentColor" stroke-width="1.3"
+                                 stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M8 12a4 4 0 0 1 4-4h10l4 4h14a4 4 0 0 1 4 4v20a4 4 0 0 1-4 4H12a4 4 0 0 1-4-4z"/>
+                                <path d="M18 26h12"/>
+                                <path d="M18 32h8"/>
+                            </svg>
+                        </div>
+
+                        <h3>Nothing on the desk yet.</h3>
+                        <p>
+                            Upload a paper on the left, then fire a question
+                            above. The assistant retrieves the relevant
+                            passages — with page numbers — before answering.
+                        </p>
+
+                        <div class="empty-meta">
+                            <span class="empty-meta-item">
+                                <strong>1</strong> Upload
+                            </span>
+                            <span class="empty-meta-sep" aria-hidden="true">→</span>
+                            <span class="empty-meta-item">
+                                <strong>2</strong> Ask
+                            </span>
+                            <span class="empty-meta-sep" aria-hidden="true">→</span>
+                            <span class="empty-meta-item">
+                                <strong>3</strong> Cite
+                            </span>
+                        </div>
+                    </div>
+
+                {% endif %}
+
+            </section>
+        </main>
+
+
+        <!-- ================================================================
+             FOOTER
+             ================================================================ -->
+        <footer class="footer">
+            <span>Research Paper Assistant</span>
+            <span class="footer-sep" aria-hidden="true">/</span>
+            <span>Answers grounded in your archive</span>
+            <span class="footer-spacer"></span>
+            <span class="footer-copy">Built with FastAPI · ChromaDB</span>
+        </footer>
+
+    </div>
+
+    <script src="/static/scripts.js"></script>
+</body>
+</html>

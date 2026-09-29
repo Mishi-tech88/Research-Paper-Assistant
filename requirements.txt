@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+python-multipart
+jinja2
+python-dotenv
+pypdf
+pdfplumber
+numpy
+google-generativeai
+langchain-google-genai
